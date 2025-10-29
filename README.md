@@ -1,14 +1,13 @@
-# Laboratorio Big Data Aplicado curso 2025-26
-
 ```
  ____  ____    _      _           _
 | __ )|  _ \  / \    | |    __ _ | |__
 |  _ \| | | |/ _ \   | |   / _` || '_ \
 | |_) | |_| / ___ \  | |__| (_| || |_) |
 |____/|____/_/   \_\ |_____\__,_||_.__/
+
 ```
 
-### Iniciar laboratorio para el módulo 1
+## Iniciar laboratorio para el módulo 1
 
 - Clonamos el repositorio y entramos en la carpeta /modulo1
 - Utilizamos make para las diferentes tareas:
