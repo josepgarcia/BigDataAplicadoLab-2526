@@ -70,31 +70,30 @@ RUN if [ -f /tmp/downloads/apache-hive-${HIVE_VERSION}-bin.tar.gz ]; then \
     rm /tmp/hive.tar.gz && \
     chown -R hadoop:hadoop $HIVE_HOME
 
-# Configurar Hive para usar Derby (base de datos embebida)
-# Derby viene incluido con Hive, no necesita descarga adicional
 
-# Remove conflicting Guava jar and use Hadoop's version
-#RUN rm -f $HIVE_HOME/lib/guava-*.jar && \
-#    cp $HADOOP_HOME/share/hadoop/common/lib/guava-*.jar $HIVE_HOME/lib/
+# Configuración Hadoop
+COPY config/core-site.xml $HADOOP_HOME/etc/hadoop/
+COPY config/hadoop-env.sh $HADOOP_HOME/etc/hadoop/
+COPY config/hdfs-site.xml $HADOOP_HOME/etc/hadoop/
 
-# Copy configuration files first
-COPY config/* $HADOOP_HOME/etc/hadoop/
+## Nombres de los nodos
+COPY config/workers $HADOOP_HOME/etc/hadoop/
 
-# Copy bash configuration to hadoop user's .bashrc
-COPY config-bash/bashrc /tmp/bashrc
+# Añdir líneas al bashrc del contenedor
+COPY config/bashrc /tmp/bashrc
 RUN cat /tmp/bashrc >> /home/hadoop/.bashrc && \
     rm /tmp/bashrc && \
     chown hadoop:hadoop /home/hadoop/.bashrc
 
-# Copy Hive configuration
-#COPY hive-config/hive-site.xml $HIVE_HOME/conf/
-#COPY hive-config/hive-env.sh $HIVE_HOME/conf/
+# Configuración Hive
+COPY config/hive-site.xml $HIVE_HOME/conf/
+COPY config/hive-env.sh $HIVE_HOME/conf/
 
-# Configure Hadoop environment variables (append to existing hadoop-env.sh)
+# Damos permisos de ejecución los scripts con variables de entorno
 RUN chmod +x $HADOOP_HOME/etc/hadoop/hadoop-env.sh && \
-    chown -R hadoop:hadoop $HADOOP_HOME/etc/hadoop/
-    #chmod +x $HIVE_HOME/conf/hive-env.sh && \
-    #chown -R hadoop:hadoop $HIVE_HOME/conf/
+    chmod +x $HIVE_HOME/conf/hive-env.sh && \
+    chown -R hadoop:hadoop $HADOOP_HOME/etc/hadoop/ && \
+    chown -R hadoop:hadoop $HIVE_HOME/conf/
 
 # Configure SSH to allow connections without host key verification
 RUN echo "Host *" >> /home/hadoop/.ssh/config && \

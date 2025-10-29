@@ -17,8 +17,16 @@ build:
 up:
 	@echo "🚀 Levantando clúster Hadoop (2 nodos)..."
 	docker-compose up -d
-	@echo "⏳ Esperando a que los servicios estén listos..."
-	@sleep 20
+	@echo "⏳ Esperando 20 segundos a que los servicios estén listos..."
+	@for i in $$(seq 1 20); do \
+		printf "\r["; \
+		for j in $$(seq 1 20); do \
+			if [ $$j -le $$i ]; then printf "█"; else printf "░"; fi; \
+		done; \
+		printf "] $$i/20s"; \
+		sleep 1; \
+	done; \
+	echo ""
 	@echo "✅ Clúster levantado!"
 	@echo "📊 NameNode UI: http://localhost:9870"
 	@echo "📊 ResourceManager UI: http://localhost:8088"
@@ -55,8 +63,12 @@ deep-clean:
 
 # Acceder al shell del master
 shell-master:
-	docker exec -it hadoop-master bash
+	docker exec -it -u hadoop hadoop-master bash
 
 # Acceder al shell de slave1
 shell-slave1:
-	docker exec -it hadoop-slave1 bash
+	docker exec -it -u hadoop hadoop-slave1 bash
+
+# Acceder al shell de slave2
+shell-slave2:
+	docker exec -it -u hadoop hadoop-slave2 bash

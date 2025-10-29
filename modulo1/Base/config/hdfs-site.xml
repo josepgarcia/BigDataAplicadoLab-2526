@@ -16,10 +16,4 @@
         <name>dfs.namenode.http-address</name>
         <value>master:9870</value>
     </property>
-    <!--
-    <property>
-        <name>dfs.namenode.secondary.http-address</name>
-        <value>master:9868</value>
-    </property>
-    -->
 </configuration>
