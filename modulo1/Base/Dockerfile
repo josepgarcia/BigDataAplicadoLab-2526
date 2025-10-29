@@ -1,0 +1,124 @@
+FROM eclipse-temurin:11-jre
+
+# Set environment variables
+ENV HADOOP_VERSION=3.4.1
+ENV HIVE_VERSION=2.3.9
+ENV HADOOP_HOME=/opt/hadoop
+ENV HIVE_HOME=/opt/hive
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$HIVE_HOME/bin
+ENV LANG=es_ES.UTF-8
+ENV LANGUAGE=es_ES:es
+ENV LC_ALL=es_ES.UTF-8
+
+# Install necessary packages
+RUN apt-get update && apt-get install -y \
+    openssh-server \
+    openssh-client \
+    bash \
+    wget \
+    rsync \
+    sudo \
+    curl \
+    coreutils \
+    procps \
+    locales \
+    && rm -rf /var/lib/apt/lists/* \
+    && sed -i '/es_ES.UTF-8/s/^# //g' /etc/locale.gen \
+    && locale-gen es_ES.UTF-8 \
+    && update-locale LANG=es_ES.UTF-8 LANGUAGE=es_ES:es LC_ALL=es_ES.UTF-8
+
+# Create hadoop user and group
+RUN groupadd hadoop && \
+    useradd -ms /bin/bash -g hadoop hadoop && \
+    echo "hadoop ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Configure SSH for hadoop user
+RUN mkdir -p /home/hadoop/.ssh && \
+    ssh-keygen -t rsa -f /home/hadoop/.ssh/id_rsa -q -N "" && \
+    cat /home/hadoop/.ssh/id_rsa.pub >> /home/hadoop/.ssh/authorized_keys && \
+    chown -R hadoop:hadoop /home/hadoop/.ssh && \
+    chmod 600 /home/hadoop/.ssh/authorized_keys && \
+    chmod 700 /home/hadoop/.ssh
+
+# Copy downloads directory (para caché local de Hadoop y Hive)
+COPY downloads/ /tmp/downloads/
+
+# Download and Install Hadoop (usa caché local si existe)
+RUN if [ -f /tmp/downloads/hadoop-${HADOOP_VERSION}.tar.gz ]; then \
+        echo "✅ Usando Hadoop desde caché local..."; \
+        cp /tmp/downloads/hadoop-${HADOOP_VERSION}.tar.gz /tmp/hadoop.tar.gz; \
+    else \
+        echo "⬇️  Descargando Hadoop desde Internet..."; \
+        wget -q https://dlcdn.apache.org/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz -O /tmp/hadoop.tar.gz; \
+    fi && \
+    tar -xzf /tmp/hadoop.tar.gz -C /usr/local/ && \
+    mv /usr/local/hadoop-${HADOOP_VERSION} $HADOOP_HOME && \
+    rm /tmp/hadoop.tar.gz && \
+    chown -R hadoop:hadoop $HADOOP_HOME
+
+# Download and Install Hive (usa caché local si existe)
+RUN if [ -f /tmp/downloads/apache-hive-${HIVE_VERSION}-bin.tar.gz ]; then \
+        echo "✅ Usando Hive desde caché local..."; \
+        cp /tmp/downloads/apache-hive-${HIVE_VERSION}-bin.tar.gz /tmp/hive.tar.gz; \
+    else \
+        echo "⬇️  Descargando Hive desde Internet..."; \
+        wget -q https://archive.apache.org/dist/hive/hive-${HIVE_VERSION}/apache-hive-${HIVE_VERSION}-bin.tar.gz -O /tmp/hive.tar.gz; \
+    fi && \
+    tar -xzf /tmp/hive.tar.gz -C /usr/local/ && \
+    mv /usr/local/apache-hive-${HIVE_VERSION}-bin $HIVE_HOME && \
+    rm /tmp/hive.tar.gz && \
+    chown -R hadoop:hadoop $HIVE_HOME
+
+# Configurar Hive para usar Derby (base de datos embebida)
+# Derby viene incluido con Hive, no necesita descarga adicional
+
+# Remove conflicting Guava jar and use Hadoop's version
+#RUN rm -f $HIVE_HOME/lib/guava-*.jar && \
+#    cp $HADOOP_HOME/share/hadoop/common/lib/guava-*.jar $HIVE_HOME/lib/
+
+# Copy configuration files first
+COPY config/* $HADOOP_HOME/etc/hadoop/
+
+# Copy bash configuration to hadoop user's .bashrc
+COPY config-bash/bashrc /tmp/bashrc
+RUN cat /tmp/bashrc >> /home/hadoop/.bashrc && \
+    rm /tmp/bashrc && \
+    chown hadoop:hadoop /home/hadoop/.bashrc
+
+# Copy Hive configuration
+#COPY hive-config/hive-site.xml $HIVE_HOME/conf/
+#COPY hive-config/hive-env.sh $HIVE_HOME/conf/
+
+# Configure Hadoop environment variables (append to existing hadoop-env.sh)
+RUN chmod +x $HADOOP_HOME/etc/hadoop/hadoop-env.sh && \
+    chown -R hadoop:hadoop $HADOOP_HOME/etc/hadoop/
+    #chmod +x $HIVE_HOME/conf/hive-env.sh && \
+    #chown -R hadoop:hadoop $HIVE_HOME/conf/
+
+# Configure SSH to allow connections without host key verification
+RUN echo "Host *" >> /home/hadoop/.ssh/config && \
+    echo "   StrictHostKeyChecking no" >> /home/hadoop/.ssh/config && \
+    echo "   UserKnownHostsFile=/dev/null" >> /home/hadoop/.ssh/config && \
+    chown hadoop:hadoop /home/hadoop/.ssh/config && \
+    chmod 600 /home/hadoop/.ssh/config
+
+# Copy the start script
+COPY start-hadoop.sh /start-hadoop.sh
+RUN chmod +x /start-hadoop.sh && \
+    chown hadoop:hadoop /start-hadoop.sh
+
+# Create necessary directories
+RUN mkdir -p /var/run/sshd && \
+    mkdir -p $HADOOP_HOME/logs && \
+    mkdir -p $HIVE_HOME/logs && \
+    mkdir -p /tmp/hive && \
+    chown -R hadoop:hadoop $HADOOP_HOME/logs && \
+    chown -R hadoop:hadoop $HIVE_HOME/logs && \
+    chown -R hadoop:hadoop /tmp/hive
+
+# Expose ports
+EXPOSE 9870 8088 9000 8042 22 10000 10002 9083
+
+# Set entry point
+CMD ["/start-hadoop.sh"]
