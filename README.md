@@ -7,13 +7,12 @@
 - Utilizamos make para las diferentes tareas:
 
 ```bash
-
+# Descargamos la caché (hadoop + hive)
 make download-cache
 
+# Construimos las imagenes
 make build
 
+# Levantamos los contenedores
 make up
-```
-```
-```
 ```
