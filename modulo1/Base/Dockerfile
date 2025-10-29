@@ -85,6 +85,10 @@ RUN cat /tmp/bashrc >> /home/hadoop/.bashrc && \
     rm /tmp/bashrc && \
     chown hadoop:hadoop /home/hadoop/.bashrc
 
+# Coniguración YARN
+COPY config/mapred-site.xml $HADOOP_HOME/etc/hadoop/
+COPY config/yarn-site.xml $HADOOP_HOME/etc/hadoop/
+
 # Configuración Hive
 COPY config/hive-site.xml $HIVE_HOME/conf/
 COPY config/hive-env.sh $HIVE_HOME/conf/

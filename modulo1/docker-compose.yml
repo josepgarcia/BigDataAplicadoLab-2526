@@ -27,6 +27,9 @@ services:
       - NODE_TYPE=slave
     depends_on:
       - master
+    ports:
+      - "8042:8042"
+      - "9864:9864"
     networks:
       - hadoop-net
     volumes:
