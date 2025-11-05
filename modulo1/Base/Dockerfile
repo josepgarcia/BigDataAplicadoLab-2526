@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
     rsync \
     sudo \
     curl \
+    dos2unix \
     coreutils \
     procps \
     locales \
@@ -93,6 +94,17 @@ COPY config/yarn-site.xml $HADOOP_HOME/etc/hadoop/
 COPY config/hive-site.xml $HIVE_HOME/conf/
 COPY config/hive-env.sh $HIVE_HOME/conf/
 
+# Normalizar finales de línea de los ficheros copiados (evita problemas CRLF)
+RUN dos2unix \
+    $HADOOP_HOME/etc/hadoop/core-site.xml \
+    $HADOOP_HOME/etc/hadoop/hadoop-env.sh \
+    $HADOOP_HOME/etc/hadoop/hdfs-site.xml \
+    $HADOOP_HOME/etc/hadoop/workers \
+    $HADOOP_HOME/etc/hadoop/mapred-site.xml \
+    $HADOOP_HOME/etc/hadoop/yarn-site.xml \
+    $HIVE_HOME/conf/hive-site.xml \
+    $HIVE_HOME/conf/hive-env.sh || true
+
 # Damos permisos de ejecución los scripts con variables de entorno
 RUN chmod +x $HADOOP_HOME/etc/hadoop/hadoop-env.sh && \
     chmod +x $HIVE_HOME/conf/hive-env.sh && \
@@ -110,6 +122,7 @@ RUN echo "Host *" >> /home/hadoop/.ssh/config && \
 COPY start-hadoop.sh /start-hadoop.sh
 RUN chmod +x /start-hadoop.sh && \
     chown hadoop:hadoop /start-hadoop.sh
+RUN dos2unix /start-hadoop.sh
 
 # Create necessary directories
 RUN mkdir -p /var/run/sshd && \

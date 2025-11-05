@@ -12,4 +12,8 @@
     <value>/tmp/hadoop-${user.name}</value>
     <final>true</final>
   </property>
+    <property>
+    <name>hadoop.http.staticuser.user</name>
+    <value>hadoop</value>
+  </property>
 </configuration>
