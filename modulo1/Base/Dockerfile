@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     dos2unix \
     coreutils \
+    vim \
     procps \
     locales \
     && rm -rf /var/lib/apt/lists/* \
