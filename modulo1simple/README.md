@@ -45,7 +45,7 @@ Para ejecutar este módulo en Windows 11, se recomienda usar **WSL2 (Windows Sub
    
    # Clonar el repositorio
    cd ~
-   git clone <tu-repositorio>
+   git clone git@github.com:josepgarcia/BigDataAplicadoLab-2526.git
    cd BigDataAplicadoLab-2526/modulo1simple
    ```
 
