@@ -71,8 +71,5 @@ yarn-error.log*
 
 # macOS-specific files
 .DS_Store
-modulo1_IA/
-modulo1/Base/downloads/
-modulo1simple/Base/downloads/
-modulo2/Spark/downloads/
+**/downloads/
 
