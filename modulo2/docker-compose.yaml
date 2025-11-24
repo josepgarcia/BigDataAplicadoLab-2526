@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  spark-master:
+    build: ./Spark
+    container_name: spark-master
+    hostname: spark-master
+    environment:
+      - SPARK_MODE=master
+      - SPARK_MASTER_HOST=spark-master
+      - SPARK_MASTER_PORT=7077
+      - SPARK_MASTER_WEBUI_PORT=8080
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_MEMORY=2g
+      - SPARK_DAEMON_MEMORY=1g
+      - PYSPARK_PYTHON=python3
+    ports:
+      - "8080:8080" # Spark Master UI
+      - "7077:7077" # Spark Master
+      - "4040:4040" # Spark Application UI
+      - "18080:18080" # Spark History Server
+      - "8888:8888" # Jupyter Notebook
+    volumes:
+      - spark-data:/opt/spark/work
+      - spark-logs:/opt/spark/logs
+      - ./notebooks:/home/hadoop/notebooks
+      - ./data:/home/hadoop/data
+    networks:
+      - spark-net
+      - modulo1_hadoop-net
+    restart: unless-stopped
+
+networks:
+  spark-net:
+    driver: bridge
+  modulo1_hadoop-net:
+    external: true
+
+volumes:
+  spark-data:
+  spark-logs:

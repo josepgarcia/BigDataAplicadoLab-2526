@@ -1,0 +1,31 @@
+# Descargas pesadas
+Spark/downloads/*.tar.gz
+Spark/downloads/*.tgz
+
+# Datos locales
+data/*
+!data/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+*.pyc
+
+# Jupyter
+.jupyter/
+*.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+.env
