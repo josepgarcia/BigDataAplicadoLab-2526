@@ -21,6 +21,8 @@ Este módulo proporciona un entorno Apache Spark standalone con integración a H
 - `wget` disponible en el sistema (macOS: `brew install wget`)
 - `shasum` (incluido en macOS) para verificar SHA-512
 
+> **Nota para Windows 11**: Ver la [guía de configuración WSL2](../README.md#-uso-en-windows-11) en el README principal.
+
 ## Instalación Rápida
 
 ```bash
