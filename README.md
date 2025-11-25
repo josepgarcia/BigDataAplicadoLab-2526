@@ -38,6 +38,9 @@ Entorno Apache Spark standalone con integración a HDFS.
 - Librerías de Data Science (pandas, numpy, matplotlib)
 - Conexión con HDFS del módulo1
 
+> [!WARNING]
+> Este módulo aún no está funcional. Está en desarrollo.
+
 **[📖 Ver documentación completa →](modulo2/README.md)**
 
 ## 🚀 Inicio Rápido
