@@ -79,6 +79,13 @@ wsl --install
 ```
 Esto instalará Ubuntu por defecto. Reinicia el equipo si es necesario.
 
+#### 1.1 Instalar WSL2
+
+```powershell
+# En PowerShell como administrador
+wsl.exe --install Ubuntu-22.04 
+```
+
 #### 2. Instalar Docker Desktop
 - Descarga desde [docker.com](https://www.docker.com/products/docker-desktop/)
 - Durante la instalación, asegúrate de habilitar la integración con WSL2
