@@ -25,16 +25,18 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Configurar JAVA_HOME dinámicamente después de instalar Java
+RUN JAVA_HOME=$(dirname $(dirname $(update-alternatives --query java | grep 'Value:' | awk '{print $2}'))) && \
+    echo "export JAVA_HOME=${JAVA_HOME}" >> /etc/environment && \
+    echo "export PATH=\${JAVA_HOME}/bin:\${PATH}" >> /etc/environment
+
+# Configurar JAVA_HOME para este build
+RUN export JAVA_HOME=$(dirname $(dirname $(update-alternatives --query java | grep 'Value:' | awk '{print $2}')))
+
 # Crear usuario hadoop
 RUN useradd -m -s /bin/bash hadoop && \
     echo "hadoop:hadoop" | chpasswd && \
     usermod -aG sudo hadoop
-
-# Configurar JAVA_HOME detectando automáticamente la arquitectura
-RUN ARCH=$(dpkg --print-architecture) && \
-    echo "export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-${ARCH}" >> /etc/environment && \
-    ln -sf /usr/lib/jvm/java-11-openjdk-${ARCH} /usr/lib/jvm/java-11-openjdk
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk
 
 # Instalar Hadoop (cliente para HDFS)
 COPY downloads/hadoop-${HADOOP_VERSION}.tar.gz /tmp/hadoop.tar.gz

@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
-# Detectar arquitectura automáticamente
-export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
+# Detectar JAVA_HOME automáticamente
+if [ -z "$JAVA_HOME" ]; then
+  export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+fi
+
 export HADOOP_HOME=/usr/local/hadoop
 export SPARK_HOME=/opt/spark
 export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
