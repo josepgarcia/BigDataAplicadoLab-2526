@@ -1,6 +1,11 @@
 .PHONY: help download-cache build up down restart logs clean shell-spark jupyter
 
 # Variables
+# Autodetección de Docker Compose (V2 "docker compose" o V1 "docker-compose")
+DOCKER_COMPOSE := $(shell \
+	if docker compose version >/dev/null 2>&1; then echo "docker compose"; \
+	elif command -v docker-compose >/dev/null 2>&1; then echo "docker-compose"; \
+	else echo "docker compose"; fi)
 COMPOSE_FILE=docker-compose.yaml
 SPARK_VERSION=3.5.0
 HADOOP_VERSION=3.3.6
@@ -15,11 +20,11 @@ download-cache: ## Descargar Spark a la caché local
 
 build: ## Construir la imagen Docker de Spark
 	@echo "🔨 Construyendo imagen de Spark..."
-	docker compose -f $(COMPOSE_FILE) build
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) build
 
 up: ## Levantar el contenedor de Spark
 	@echo "🚀 Levantando Spark..."
-	docker compose -f $(COMPOSE_FILE) up -d
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d
 	@echo "✅ Spark Master UI: http://localhost:8080"
 	@echo "✅ Spark Application UI: http://localhost:4040"
 	@echo "✅ Jupyter Notebook: http://localhost:8888"
@@ -27,16 +32,16 @@ up: ## Levantar el contenedor de Spark
 
 down: ## Detener y eliminar contenedores
 	@echo "🛑 Deteniendo Spark..."
-	docker compose -f $(COMPOSE_FILE) down
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) down
 
 restart: down up ## Reiniciar Spark
 
 logs: ## Ver logs del contenedor Spark
-	docker compose -f $(COMPOSE_FILE) logs -f spark-master
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) logs -f spark-master
 
 clean: down ## Limpiar todo (contenedores, volúmenes, imágenes)
 	@echo "🧹 Limpiando contenedores, volúmenes e imágenes..."
-	docker compose -f $(COMPOSE_FILE) down -v --rmi all
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) down -v --rmi all
 	@echo "✅ Limpieza completada"
 
 shell-spark: ## Abrir shell en el contenedor Spark
@@ -67,7 +72,7 @@ test-spark: ## Ejecutar un test básico de Spark
 
 status: ## Ver estado de los servicios
 	@echo "📊 Estado de Spark:"
-	@docker compose -f $(COMPOSE_FILE) ps
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) ps
 
 install: download-cache build up ## Instalación completa (download + build + up)
 	@echo "✅ Instalación completada"

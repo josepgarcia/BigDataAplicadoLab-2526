@@ -8,15 +8,22 @@ download-cache:
 	@echo "📦 Descargando archivos al caché local..."
 	@cd Base && ./download-cache.sh
 
+# Variables
+# Autodetección de Docker Compose (V2 "docker compose" o V1 "docker-compose")
+DOCKER_COMPOSE := $(shell \
+	if docker compose version >/dev/null 2>&1; then echo "docker compose"; \
+	elif command -v docker-compose >/dev/null 2>&1; then echo "docker-compose"; \
+	else echo "docker compose"; fi)
+
 # Construir las imágenes
 build:
 	@echo "🔨 Construyendo imágenes Docker..."
-	docker compose build
+	$(DOCKER_COMPOSE) build
 
 # Levantar el clúster
 up:
 	@echo "🚀 Levantando clúster Hadoop (2 nodos)..."
-	docker compose up -d
+	$(DOCKER_COMPOSE) up -d
 	@echo "⏳ Esperando 20 segundos a que los servicios estén listos..."
 	@for i in $$(seq 1 20); do \
 		printf "\r["; \
@@ -33,7 +40,7 @@ up:
 
 clean:
 	@echo "🧹 Limpiando contenedores, volúmenes y red del proyecto..."
-	docker compose down -v
+	$(DOCKER_COMPOSE) down -v
 	@echo "✅ Limpieza completada!"
 	@echo "💡 Para eliminar también las imágenes usa: make deep-clean"
 
@@ -51,7 +58,7 @@ deep-clean:
 	@read -p "¿Estás seguro? (s/N): " confirm && [ "$$confirm" = "s" ] || [ "$$confirm" = "S" ] || (echo "Operación cancelada" && exit 1)
 	@echo ""
 	@echo "🗑️  Deteniendo y eliminando contenedores y volúmenes del proyecto..."
-	@docker compose down -v 2>/dev/null || true
+	@$(DOCKER_COMPOSE) down -v 2>/dev/null || true
 	@echo "🗑️  Eliminando imágenes del proyecto..."
 	@docker rmi modulo1-master modulo1-slave1 2>/dev/null || true
 	@echo "🗑️  Eliminando volúmenes del proyecto..."
