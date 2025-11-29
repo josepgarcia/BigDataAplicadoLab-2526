@@ -2,7 +2,8 @@
 
 set -euo pipefail
 
-DOWNLOAD_DIR="./downloads"
+# Directorio central de downloads en la raíz del proyecto
+DOWNLOAD_DIR="../../../downloads"
 SPARK_VERSION="3.5.0"
 HADOOP_VERSION="3.3.6"
 

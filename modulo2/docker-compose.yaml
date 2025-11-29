@@ -1,6 +1,8 @@
 services:
   spark-master:
-    build: ./Spark
+    build:
+      context: ..
+      dockerfile: modulo2/Spark/Dockerfile
     container_name: spark-master
     hostname: spark-master
     environment:

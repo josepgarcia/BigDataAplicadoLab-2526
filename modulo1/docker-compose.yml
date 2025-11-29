@@ -1,6 +1,8 @@
 services:
   master:
-    build: ./Base
+    build:
+      context: ..
+      dockerfile: modulo1/Base/Dockerfile
     container_name: hadoop-master
     hostname: master
     environment:
@@ -20,7 +22,9 @@ services:
       - master-data:/tmp/hadoop-hadoop
 
   slave1:
-    build: ./Base
+    build:
+      context: ..
+      dockerfile: modulo1/Base/Dockerfile
     container_name: hadoop-slave1
     hostname: slave1
     environment:
@@ -36,7 +40,9 @@ services:
       - slave1-data:/tmp/hadoop-hadoop
 
   slave2:
-    build: ./Base
+    build:
+      context: ..
+      dockerfile: modulo1/Base/Dockerfile
     container_name: hadoop-slave2
     hostname: slave2
     environment:

@@ -14,7 +14,9 @@ Repositorio de laboratorios para el curso de Big Data Aplicado. Incluye entornos
 ## 📚 Módulos Disponibles
 
 ### [Módulo 1 - Hadoop Multi-Nodo](modulo1/README.md)
+
 Clúster Hadoop con 3 nodos (1 master + 2 slaves) para simular un entorno distribuido real.
+
 - Hadoop 3.4.1 con HDFS y YARN
 - Hive 2.3.9 para consultas SQL
 - Replicación factor 3
@@ -23,7 +25,9 @@ Clúster Hadoop con 3 nodos (1 master + 2 slaves) para simular un entorno distri
 **[📖 Ver documentación completa →](modulo1/README.md)**
 
 ### [Módulo 1 Simple - Hadoop Single Node](modulo1simple/README.md)
+
 Versión simplificada de Hadoop en un solo nodo para desarrollo y pruebas rápidas.
+
 - Hadoop 3.4.1 en modo pseudo-distribuido
 - HDFS con replicación factor 1
 - Carpeta compartida con ejemplos MapReduce
@@ -32,14 +36,16 @@ Versión simplificada de Hadoop en un solo nodo para desarrollo y pruebas rápid
 **[📖 Ver documentación completa →](modulo1simple/README.md)**
 
 ### [Módulo 2 - Apache Spark](modulo2/README.md)
+
+> [!WARNING]
+> Este módulo aún no está funcional. Está en desarrollo.
+
 Entorno Apache Spark standalone con integración a HDFS.
+
 - Apache Spark 3.5.0
 - PySpark con Jupyter Notebook
 - Librerías de Data Science (pandas, numpy, matplotlib)
 - Conexión con HDFS del módulo1
-
-> [!WARNING]
-> Este módulo aún no está funcional. Está en desarrollo.
 
 **[📖 Ver documentación completa →](modulo2/README.md)**
 
@@ -50,12 +56,33 @@ Entorno Apache Spark standalone con integración a HDFS.
 git clone https://github.com/josepgarcia/BigDataAplicadoLab-2526.git
 cd BigDataAplicadoLab-2526
 
+# Si tienes descargas previas en carpetas locales, migrarlas al sistema centralizado
+./migrate-downloads.sh
+
 # Elegir un módulo y seguir su README
 cd modulo1simple  # o modulo1, modulo2
-make download-cache
+make download-cache  # Descarga a /downloads (compartido por todos los módulos)
 make build
 make up
 ```
+
+## 📦 Sistema Centralizado de Downloads
+
+Todos los módulos comparten un único directorio `/downloads` en la raíz del proyecto. Esto significa que:
+
+- **Una sola descarga**: Si un módulo descarga un archivo, todos los demás módulos pueden usarlo
+- **Ahorro de espacio**: No hay duplicación de archivos entre módulos
+- **Más rápido**: Los Makefiles verifican si el archivo ya existe antes de descargar
+
+### Migración desde el Sistema Anterior
+
+Si tienes descargas previas en carpetas locales (`modulo1/Base/downloads`, etc.), ejecuta el script de migración:
+
+```bash
+./migrate-downloads.sh
+```
+
+Este script moverá todos los archivos al directorio central `/downloads` sin duplicar archivos existentes.
 
 ## 📋 Requisitos Previos
 
@@ -73,25 +100,29 @@ make up
 Para ejecutar estos módulos en Windows 11, se recomienda usar **WSL2 (Windows Subsystem for Linux 2)** con Docker Desktop:
 
 #### 1. Instalar WSL2
+
 ```powershell
 # En PowerShell como administrador
 wsl --install
 ```
+
 Esto instalará Ubuntu por defecto. Reinicia el equipo si es necesario.
 
 #### 1.1 Instalar WSL2
 
 ```powershell
 # En PowerShell como administrador
-wsl.exe --install Ubuntu-22.04 
+wsl.exe --install Ubuntu-22.04
 ```
 
 #### 2. Instalar Docker Desktop
+
 - Descarga desde [docker.com](https://www.docker.com/products/docker-desktop/)
 - Durante la instalación, asegúrate de habilitar la integración con WSL2
 - En Docker Desktop → Settings → Resources → WSL Integration, activa tu distribución Ubuntu
 
 #### 3. Configurar el entorno en WSL2
+
 ```bash
 # Abrir terminal WSL (Ubuntu)
 # Instalar dependencias
@@ -105,6 +136,7 @@ cd BigDataAplicadoLab-2526
 ```
 
 #### 4. Ejecutar comandos normalmente
+
 ```bash
 cd modulo1simple  # o el módulo que prefieras
 make download-cache
@@ -116,6 +148,7 @@ make test  # si está disponible
 ### ⚠️ Consideraciones Importantes para Windows
 
 - **Finales de línea**: Git en Windows puede convertir LF a CRLF. Configura Git para mantener LF:
+
   ```bash
   git config --global core.autocrlf input
   ```
@@ -149,6 +182,7 @@ make shell-*       # Acceder al shell de un contenedor
 
 ```
 BigDataAplicadoLab-2526/
+├── downloads/            # Caché centralizado de descargas (compartido por todos los módulos)
 ├── modulo1/              # Hadoop multi-nodo (3 nodos)
 │   ├── README.md
 │   ├── Makefile
@@ -167,6 +201,13 @@ BigDataAplicadoLab-2526/
 │   ├── Spark/
 │   ├── notebooks/
 │   └── data/
+├── modulo2simple/        # Hadoop single-node optimizado
+│   ├── README.md
+│   ├── Makefile
+│   ├── docker-compose.yml
+│   ├── Base/
+│   └── ejercicios/
+├── migrate-downloads.sh   # Script de migración al sistema centralizado
 └── README.md             # Este archivo
 ```
 

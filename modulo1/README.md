@@ -238,7 +238,7 @@ modulo1/
     │   ├── hive-site.xml
     │   ├── workers
     │   └── ...
-    └── downloads/                  # Caché de descargas
+    └── (downloads centralizados en /downloads en la raíz del proyecto)
 ```
 
 ## Autor

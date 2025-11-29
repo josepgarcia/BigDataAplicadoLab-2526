@@ -71,9 +71,9 @@ RUN pip3 install --no-cache-dir \
     pyarrow==14.0.1
 
 # Configuración Spark
-COPY config/spark-defaults.conf $SPARK_HOME/conf/
-COPY config/spark-env.sh $SPARK_HOME/conf/
-COPY config/log4j2.properties $SPARK_HOME/conf/
+COPY modulo2/Spark/config/spark-defaults.conf $SPARK_HOME/conf/
+COPY modulo2/Spark/config/spark-env.sh $SPARK_HOME/conf/
+COPY modulo2/Spark/config/log4j2.properties $SPARK_HOME/conf/
 RUN chmod +x $SPARK_HOME/conf/spark-env.sh && \
     dos2unix $SPARK_HOME/conf/spark-env.sh
 
@@ -86,7 +86,7 @@ RUN mkdir -p $SPARK_HOME/logs \
     chown -R hadoop:hadoop $SPARK_HOME /home/hadoop
 
 # Script de inicio
-COPY start-spark.sh /start-spark.sh
+COPY modulo2/Spark/start-spark.sh /start-spark.sh
 RUN chmod +x /start-spark.sh && dos2unix /start-spark.sh
 
 # Configurar SSH (para Spark standalone)

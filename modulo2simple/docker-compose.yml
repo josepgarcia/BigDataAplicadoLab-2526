@@ -2,7 +2,7 @@ services:
   master:
     build:
       context: ..
-      dockerfile: modulo1simple/Base/Dockerfile
+      dockerfile: modulo2simple/Base/Dockerfile
     container_name: hadoop-master-simple
     hostname: master
     environment:
@@ -21,6 +21,15 @@ services:
     volumes:
       - master-data:/tmp/hadoop-hadoop
       - ./ejercicios:/home/hadoop/ejercicios
+    # Optimización para máquinas menos potentes
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.5'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
 
 networks:
   hadoop-net:

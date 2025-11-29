@@ -83,7 +83,7 @@ make status        # Ver estado de servicios
 
 ## Descarga y Verificación
 
-- El script `Spark/download-cache.sh` descarga los paquetes a `Spark/downloads/`:
+- El script `Spark/download-cache.sh` descarga los paquetes al directorio central `/downloads` en la raíz del proyecto:
   - `spark-<version>-bin-hadoop3.tgz` (Spark)
   - `hadoop-<version>.tar.gz` (cliente HDFS)
 - Verificación de integridad obligatoria con SHA-512:
@@ -163,8 +163,8 @@ make logs
 make download-cache
 
 # Si persiste, borra manualmente el paquete (se mantiene el .sha512)
-rm -f Spark/downloads/spark-3.5.0-bin-hadoop3.tgz \
-    Spark/downloads/hadoop-3.3.6.tar.gz
+rm -f ../../downloads/spark-3.5.0-bin-hadoop3.tgz \
+    ../../downloads/hadoop-3.3.6.tar.gz
 make download-cache
 ```
 
@@ -179,7 +179,7 @@ modulo2/
 │   ├── download-cache.sh           # Script de descarga
 │   ├── start-spark.sh              # Script de inicio
 │   ├── config/                     # Configuraciones Spark
-│   └── downloads/                  # Caché de descargas
+│   └── (downloads centralizados en /downloads en la raíz del proyecto)
 ├── notebooks/                      # Jupyter notebooks
 └── data/                           # Datos locales
 ```

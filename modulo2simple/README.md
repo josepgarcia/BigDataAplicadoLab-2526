@@ -136,11 +136,48 @@ make build
 make up
 ```
 
+## Optimizaciones para Máquinas Menos Potentes
+
+Este módulo está optimizado para funcionar en máquinas con recursos limitados. Las siguientes optimizaciones han sido aplicadas:
+
+### Límites de Recursos Docker
+- **Memoria máxima**: 2GB (límite) / 1GB (reservado)
+- **CPU máxima**: 1.5 cores (límite) / 0.5 cores (reservado)
+
+### Optimizaciones de Hadoop
+- **NameNode**: Heap reducido a 512MB (por defecto ~1GB)
+- **DataNode**: Heap reducido a 256MB
+- **ResourceManager**: Heap reducido a 512MB
+- **NodeManager**: Heap reducido a 256MB
+- **JobHistoryServer**: Heap reducido a 256MB
+- **Garbage Collector**: G1GC optimizado para bajo consumo
+
+### Optimizaciones de YARN
+- **Memoria total disponible**: 1GB (por defecto 8GB)
+- **Memoria mínima por contenedor**: 128MB
+- **Memoria máxima por contenedor**: 512MB
+- **vCores disponibles**: 1 (en lugar de cores físicos)
+- **Intervalo de monitoreo**: 3 segundos (reducido overhead)
+
+### Optimizaciones de MapReduce
+- **Memoria por tarea Map**: 256MB (por defecto 1024MB)
+- **Memoria por tarea Reduce**: 256MB (por defecto 1024MB)
+- **Memoria ApplicationMaster**: 512MB
+- **Map tasks por defecto**: 2
+- **Reduce tasks por defecto**: 1
+
+### Optimizaciones de Hive
+- **HiveServer2 heap**: 512MB
+- **Hive Metastore heap**: 256MB
+- **Reducers máximos**: 2 (por defecto 1009)
+- **Paralelismo deshabilitado**: Para reducir uso de recursos
+- **Ejecución vectorizada**: Habilitada para mejor rendimiento con menos recursos
+
 ## Diferencias con `modulo1`
 
 - **Nodos**: 1 nodo (master) vs 3 nodos (master + 2 slaves)
 - **Replicación**: Factor 1 vs Factor 3
-- **Recursos**: Menor consumo de CPU y memoria
+- **Recursos**: Menor consumo de CPU y memoria (optimizado para máquinas menos potentes)
 - **Uso**: Desarrollo y pruebas vs Simulación de clúster
 
 ## Estructura del Proyecto
