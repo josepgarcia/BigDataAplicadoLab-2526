@@ -2,7 +2,7 @@
 
 ## Descripción
 
-Este módulo proporciona un entorno Apache Spark standalone con integración a HDFS del módulo1.
+Este módulo proporciona un entorno Apache Spark standalone con integración a HDFS del módulo1. Además, se ha preparado el entorno para funcionar en local (sin HDFS) cuando el módulo1 no está levantado.
 
 ## Características
 
@@ -12,6 +12,19 @@ Este módulo proporciona un entorno Apache Spark standalone con integración a H
 - Conexión con HDFS del módulo1
 - Spark Master UI
 - Spark History Server
+
+### Cambios y correcciones aplicadas (2025-11-29)
+
+- Detección automática de `JAVA_HOME` en la imagen Docker (ARM64) para evitar rutas `amd64` inválidas.
+- Configuración de Spark para entorno local sin HDFS:
+  - `spark.hadoop.fs.defaultFS = file:///` en `Spark/config/spark-defaults.conf`.
+  - `spark.io.compression.codec = snappy` para evitar warnings del History Server.
+- Notebook de prueba creado: `notebooks/test.ipynb` con celdas para:
+  - Import y versiones de Python/PySpark.
+  - Creación de `SparkSession` contra `spark://spark-master:7077`.
+  - Operaciones con RDD y DataFrame.
+  - Lectura de CSV local explícita: `file:///home/hadoop/data/sample.csv`.
+- Datos de ejemplo añadidos: `data/sample.csv`.
 
 ## Requisitos Previos
 
@@ -35,6 +48,20 @@ make install
 # 3. Verificar estado
 make status
 ```
+
+## Ejecutar el test del módulo
+
+Ejecuta el notebook de prueba dentro del contenedor y valida que se genera el archivo ejecutado.
+
+```bash
+make test
+```
+
+Salida esperada:
+
+- `✅ Test ejecutado correctamente: /home/hadoop/notebooks/test.executed.ipynb`
+
+En caso de fallo, el objetivo muestra `STDOUT` y `STDERR` de `nbconvert` para diagnóstico.
 
 ## Comandos Disponibles
 
@@ -90,7 +117,8 @@ hdfs dfs -ls /
 
 1. Abrir http://localhost:8888
 2. Navegar a `/notebooks/ejemplo-pyspark.ipynb`
-3. Ejecutar las celdas para ver ejemplos de integración con HDFS
+3. Ejecutar las celdas para ver ejemplos de integración con HDFS.
+   Si HDFS no está disponible, usa el notebook `notebooks/test.ipynb` y rutas locales `file:///`.
 
 ## Ejemplo de Código PySpark
 
@@ -100,11 +128,11 @@ from pyspark.sql import SparkSession
 spark = SparkSession.builder \
     .appName("Ejemplo") \
     .master("spark://spark-master:7077") \
-    .config("spark.hadoop.fs.defaultFS", "hdfs://master:9000") \
+    .config("spark.hadoop.fs.defaultFS", "file:///") \
     .getOrCreate()
 
-# Leer datos desde HDFS
-df = spark.read.parquet("hdfs://master:9000/user/hadoop/datos.parquet")
+# Leer datos locales (sin HDFS)
+df = spark.read.csv("file:///home/hadoop/data/sample.csv", header=True, inferSchema=True)
 df.show()
 ```
 
@@ -155,7 +183,3 @@ modulo2/
 ├── notebooks/                      # Jupyter notebooks
 └── data/                           # Datos locales
 ```
-
-## Autor
-
-Josep Garcia

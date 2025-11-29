@@ -1,4 +1,4 @@
-.PHONY: help download-cache build up down restart logs clean shell-spark jupyter
+.PHONY: help download-cache build up down restart logs clean shell-spark jupyter test
 
 # Variables
 # Autodetección de Docker Compose (V2 "docker compose" o V1 "docker-compose")
@@ -48,6 +48,18 @@ shell-spark: ## Abrir shell en el contenedor Spark
 	docker exec -it spark-master bash
 
 spark-submit: ## Ejecutar spark-submit (ejemplo)
+
+test: ## Ejecuta el notebook de pruebas dentro del contenedor y verifica salida
+	@echo "🧪 Ejecutando test de notebook en spark-master..."
+	@docker exec spark-master bash -c "jupyter nbconvert --to notebook --execute /home/hadoop/notebooks/test.ipynb --output /home/hadoop/notebooks/test.executed.ipynb" >/tmp/mod2_test.out 2>/tmp/mod2_test.err || true
+	@if grep -q "Writing" /tmp/mod2_test.err; then \
+	  echo "✅ Test ejecutado correctamente: /home/hadoop/notebooks/test.executed.ipynb"; \
+	else \
+	  echo "❌ Test fallido"; \
+	  echo "--- STDOUT ---"; cat /tmp/mod2_test.out || true; \
+	  echo "--- STDERR ---"; cat /tmp/mod2_test.err || true; \
+	  exit 1; \
+	fi
 	@echo "📊 Ejemplo de spark-submit:"
 	@echo "docker exec -it spark-master spark-submit --master spark://spark-master:7077 /ruta/al/script.py"
 
