@@ -78,3 +78,6 @@ modulo2/notebooks/*.ipynb
 !modulo2/notebooks/ejemplo.ipynb
 modulo2/data/*
 !modulo2/data/sample.csv
+
+# Antes de eliminar
+modulo2_BORRAR/*

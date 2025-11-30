@@ -1,185 +1,241 @@
-# Módulo 2 - Apache Spark y PySpark
+# Módulo 2 Simple - Hadoop & Spark Single Node
 
 ## Descripción
 
-Este módulo proporciona un entorno Apache Spark standalone con integración a HDFS del módulo1. Además, se ha preparado el entorno para funcionar en local (sin HDFS) cuando el módulo1 no está levantado.
+Este módulo proporciona un entorno Hadoop y Spark simplificado de un solo nodo (pseudo-distribuido) para desarrollo y pruebas rápidas.
 
 ## Características
 
-- Apache Spark 3.5.0
-- PySpark con librerías de Data Science (pandas, numpy, matplotlib, seaborn)
-- Jupyter Notebook integrado
-- Conexión con HDFS del módulo1
-- Spark Master UI
-- Spark History Server
-
-### Cambios y correcciones aplicadas (2025-11-29)
-
-- Detección automática de `JAVA_HOME` en la imagen Docker (ARM64) para evitar rutas `amd64` inválidas.
-- Configuración de Spark para entorno local sin HDFS:
-  - `spark.hadoop.fs.defaultFS = file:///` en `Spark/config/spark-defaults.conf`.
-  - `spark.io.compression.codec = snappy` para evitar warnings del History Server.
-- Notebook de prueba creado: `notebooks/test.ipynb` con celdas para:
-  - Import y versiones de Python/PySpark.
-  - Creación de `SparkSession` contra `spark://spark-master:7077`.
-  - Operaciones con RDD y DataFrame.
-  - Lectura de CSV local explícita: `file:///home/hadoop/data/sample.csv`.
-- Datos de ejemplo añadidos: `data/sample.csv`.
+- Hadoop 3.4.1 en modo pseudo-distribuido (single-node)
+- Apache Spark 3.5.0 (Master + Worker)
+- HDFS con replicación factor 1
+- YARN para ejecución de trabajos MapReduce
+- Jupyter Notebook con PySpark preconfigurado
+- Carpeta compartida `ejercicios/` para scripts y datos
+- Persistencia de datos en `data/` y notebooks en `notebooks/`
+- Scripts de prueba MapReduce incluidos
 
 ## Requisitos Previos
 
 - Docker y Docker Compose instalados
-- Módulo 1 (Hadoop) corriendo
 - Make instalado
 - `wget` disponible en el sistema (macOS: `brew install wget`)
-- `shasum` (incluido en macOS) para verificar SHA-512
 
 > **Nota para Windows 11**: Ver la [guía de configuración WSL2](../README.md#-uso-en-windows-11) en el README principal.
 
 ## Instalación Rápida
 
 ```bash
-# 1. Descargar paquetes (Spark + Hadoop cliente) con verificación
+# 1. Descargar paquetes (Hadoop + Hive) a la caché local
 make download-cache
 
-# 2. Instalación completa
-make install
+# 2. Construir la imagen Docker
+make build
 
-# 3. Verificar estado
-make status
+# 3. Levantar el contenedor
+make up
 ```
-
-## Ejecutar el test del módulo
-
-Ejecuta el notebook de prueba dentro del contenedor y valida que se genera el archivo ejecutado.
-
-```bash
-make test
-```
-
-Salida esperada:
-
-- `✅ Test ejecutado correctamente: /home/hadoop/notebooks/test.executed.ipynb`
-
-En caso de fallo, el objetivo muestra `STDOUT` y `STDERR` de `nbconvert` para diagnóstico.
 
 ## Comandos Disponibles
 
 ```bash
 make help          # Ver todos los comandos disponibles
-make download-cache# Descargar paquetes a la caché local (con verificación)
+make download-cache# Descargar paquetes a la caché local
 make build         # Construir la imagen Docker
-make up            # Levantar Spark
-make down          # Detener Spark
-make restart       # Reiniciar Spark
-make logs          # Ver logs
-make clean         # Limpiar todo
-make shell-spark   # Abrir shell en el contenedor
-make pyspark-shell # Abrir PySpark shell
-make jupyter       # Ver URL de Jupyter
-make test-hdfs     # Probar conexión con HDFS
-make status        # Ver estado de servicios
+make up            # Levantar el clúster Hadoop (1 nodo)
+make clean         # Detener y limpiar contenedores y volúmenes
+make deep-clean    # Limpieza profunda (incluye imágenes y caché)
+make shell-master  # Acceder al shell del contenedor como usuario hadoop
+make test          # Ejecutar test MapReduce (word count)
 ```
-
-## Descarga y Verificación
-
-- El script `Spark/download-cache.sh` descarga los paquetes al directorio central `/downloads` en la raíz del proyecto:
-  - `spark-<version>-bin-hadoop3.tgz` (Spark)
-  - `hadoop-<version>.tar.gz` (cliente HDFS)
-- Verificación de integridad obligatoria con SHA-512:
-  - Se descarga el `.sha512` oficial y se exige formato “HASH nombre-de-archivo”.
-  - Si el checksum no coincide, se elimina automáticamente el paquete descargado y se informa. En la siguiente ejecución se descargará de nuevo.
-- Reanudación de descargas y robustez de red:
-  - Usa `wget -c` para continuar descargas interrumpidas.
-  - Incluye reintentos y timeouts (`--tries`, `--timeout`, etc.).
-- Idempotente y por componente:
-  - Si Spark o Hadoop ya están presentes y verificados, se omiten individualmente.
-  - Si ambos están verificados, el script finaliza sin hacer nada.
 
 ## Interfaces Web
 
+- **NameNode UI**: http://localhost:9870
+- **ResourceManager UI**: http://localhost:8088
 - **Spark Master UI**: http://localhost:8080
-- **Spark Application UI**: http://localhost:4040
-- **Spark History Server**: http://localhost:18080
 - **Jupyter Notebook**: http://localhost:8888
+- **Spark History Server**: http://localhost:18080
 
-## Integración con HDFS
+## Carpeta Compartida `ejercicios/`
 
-El módulo2 se conecta automáticamente al HDFS del módulo1. Para probar:
+La carpeta `ejercicios/` está montada en el contenedor en `/home/hadoop/ejercicios`, permitiendo compartir archivos entre el host y el contenedor.
+
+Contenido incluido:
+- `mapper.py` - Script mapper para MapReduce
+- `reducer.py` - Script reducer para MapReduce
+- `quijote.txt` - Datos de ejemplo (El Quijote)
+- `test_docker.sh` - Script para ejecutar test desde el host
+- `test_bash.sh` - Script para ejecutar test desde dentro del contenedor
+
+## Ejecutar Test MapReduce
+
+### Desde el host (recomendado)
 
 ```bash
-# Desde el contenedor de Spark
-docker exec -it spark-master bash
-hdfs dfs -ls /
+make test
 ```
 
-## Uso de Jupyter
+Este comando ejecuta `test_docker.sh`, que:
+1. Sube `quijote.txt` a HDFS
+2. Ejecuta un trabajo MapReduce de conteo de palabras
+3. Muestra los primeros 20 resultados
 
-1. Abrir http://localhost:8888
-2. Navegar a `/notebooks/ejemplo-pyspark.ipynb`
-3. Ejecutar las celdas para ver ejemplos de integración con HDFS.
-   Si HDFS no está disponible, usa el notebook `notebooks/test.ipynb` y rutas locales `file:///`.
+### Desde dentro del contenedor
 
-## Ejemplo de Código PySpark
+```bash
+# Acceder al contenedor
+make shell-master
+
+# Ejecutar el test
+cd ejercicios
+bash test_bash.sh
+```
+
+## Ejemplo de Uso de HDFS
+
+```bash
+# Acceder al contenedor
+make shell-master
+
+# Listar archivos en HDFS
+hdfs dfs -ls /
+
+# Crear directorio
+hdfs dfs -mkdir /user/hadoop/datos
+
+# Subir archivo
+hdfs dfs -put /home/hadoop/ejercicios/quijote.txt /user/hadoop/datos/
+
+# Ver contenido
+hdfs dfs -cat /user/hadoop/datos/quijote.txt | head -n 10
+```
+
+## Ejemplo de Uso de Spark
+
+### PySpark Shell
+
+```bash
+# Acceder al contenedor
+make shell-master
+
+# Iniciar PySpark
+pyspark
+```
+
+### Jupyter Notebook
+
+1. Levantar el entorno (`make up`).
+2. Abrir http://localhost:8888 en el navegador.
+3. Crear un nuevo notebook Python 3.
+4. Probar el siguiente código:
 
 ```python
 from pyspark.sql import SparkSession
 
-spark = SparkSession.builder \
-    .appName("Ejemplo") \
-    .master("spark://spark-master:7077") \
-    .config("spark.hadoop.fs.defaultFS", "file:///") \
-    .getOrCreate()
-
-# Leer datos locales (sin HDFS)
-df = spark.read.csv("file:///home/hadoop/data/sample.csv", header=True, inferSchema=True)
+spark = SparkSession.builder.appName("Test").getOrCreate()
+df = spark.createDataFrame([(1, "a"), (2, "b")], ["id", "val"])
 df.show()
 ```
 
 ## Troubleshooting
 
-### Error de conexión con HDFS
+### El contenedor no inicia
 
 ```bash
-# Verificar que módulo1 está corriendo
-cd ../modulo1
-make status
+# Ver logs del contenedor
+docker logs hadoop-master-simple
 
-# Verificar conectividad de red
-docker network ls | grep modulo1_hadoop-net
+# Verificar estado
+docker ps -a | grep hadoop-master-simple
 ```
 
-### Jupyter no se inicia
+### Error de permisos en HDFS
+
+Los comandos HDFS deben ejecutarse como usuario `hadoop`. Si usas `docker exec`, añade `-u hadoop`:
 
 ```bash
-make logs
-# Buscar errores relacionados con Jupyter
+docker exec -u hadoop hadoop-master-simple hdfs dfs -ls /
 ```
 
-### Fallo de checksum en descarga
+### Limpiar y reiniciar
 
 ```bash
-# Reintenta la descarga/verificación
-make download-cache
+# Limpieza completa
+make clean
 
-# Si persiste, borra manualmente el paquete (se mantiene el .sha512)
-rm -f ../../downloads/spark-3.5.0-bin-hadoop3.tgz \
-    ../../downloads/hadoop-3.3.6.tar.gz
-make download-cache
+# Reconstruir y levantar
+make build
+make up
 ```
+
+## Optimizaciones para Máquinas Menos Potentes
+
+Este módulo está optimizado para funcionar en máquinas con recursos limitados. Las siguientes optimizaciones han sido aplicadas:
+
+### Límites de Recursos Docker
+- **Memoria máxima**: 2GB (límite) / 1GB (reservado)
+- **CPU máxima**: 1.5 cores (límite) / 0.5 cores (reservado)
+
+### Optimizaciones de Hadoop
+- **NameNode**: Heap reducido a 512MB (por defecto ~1GB)
+- **DataNode**: Heap reducido a 256MB
+- **ResourceManager**: Heap reducido a 512MB
+- **NodeManager**: Heap reducido a 256MB
+- **JobHistoryServer**: Heap reducido a 256MB
+- **Garbage Collector**: G1GC optimizado para bajo consumo
+
+### Optimizaciones de YARN
+- **Memoria total disponible**: 1GB (por defecto 8GB)
+- **Memoria mínima por contenedor**: 128MB
+- **Memoria máxima por contenedor**: 512MB
+- **vCores disponibles**: 1 (en lugar de cores físicos)
+- **Intervalo de monitoreo**: 3 segundos (reducido overhead)
+
+### Optimizaciones de MapReduce
+- **Memoria por tarea Map**: 256MB (por defecto 1024MB)
+- **Memoria por tarea Reduce**: 256MB (por defecto 1024MB)
+- **Memoria ApplicationMaster**: 512MB
+- **Map tasks por defecto**: 2
+- **Reduce tasks por defecto**: 1
+
+### Optimizaciones de Hive
+- **HiveServer2 heap**: 512MB
+- **Hive Metastore heap**: 256MB
+- **Reducers máximos**: 2 (por defecto 1009)
+- **Paralelismo deshabilitado**: Para reducir uso de recursos
+- **Ejecución vectorizada**: Habilitada para mejor rendimiento con menos recursos
+
+## Diferencias con `modulo1`
+
+- **Nodos**: 1 nodo (master) vs 3 nodos (master + 2 slaves)
+- **Replicación**: Factor 1 vs Factor 3
+- **Recursos**: Menor consumo de CPU y memoria (optimizado para máquinas menos potentes)
+- **Uso**: Desarrollo y pruebas vs Simulación de clúster
 
 ## Estructura del Proyecto
 
 ```
 modulo2/
 ├── Makefile                        # Comandos disponibles
-├── docker-compose.yaml             # Configuración de servicios
-├── Spark/
+├── docker-compose.yml              # Configuración del servicio
+├── Base/
 │   ├── Dockerfile                  # Imagen Docker
 │   ├── download-cache.sh           # Script de descarga
-│   ├── start-spark.sh              # Script de inicio
-│   ├── config/                     # Configuraciones Spark
+│   ├── start-hadoop.sh             # Script de inicio
+│   ├── config/                     # Configuraciones Hadoop y Spark
 │   └── (downloads centralizados en /downloads en la raíz del proyecto)
-├── notebooks/                      # Jupyter notebooks
-└── data/                           # Datos locales
+├── ejercicios/                     # Carpeta compartida
+│   ├── mapper.py                   # Mapper MapReduce
+│   ├── reducer.py                  # Reducer MapReduce
+│   ├── quijote.txt                 # Datos de ejemplo
+│   ├── test_docker.sh              # Test desde host
+│   └── test_bash.sh                # Test desde contenedor
+├── data/                           # Persistencia de datos HDFS/Local
+└── notebooks/                      # Persistencia de Jupyter Notebooks
+```
+
+## Autor
+
+Josep Garcia
 ```

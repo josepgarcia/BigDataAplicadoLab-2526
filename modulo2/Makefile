@@ -1,92 +1,89 @@
-.PHONY: help download-cache build up down restart logs clean shell-spark jupyter test
+.PHONY: help download-cache build up clean deep-clean shell-master
+
+help: ## Mostrar esta ayuda
+	@echo "Comandos disponibles para Módulo 2 Simple - Hadoop & Spark Single Node:"
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "Ejemplos de uso:"
+	@echo "  make download-cache  # Descargar paquetes al caché central (/downloads)"
+	@echo "  make build           # Construir la imagen Docker"
+	@echo "  make up              # Levantar el clúster Hadoop"
+	@echo "  make test            # Ejecutar test MapReduce"
+
+# Descargar Hadoop y Hive al caché local (acelera reconstrucciones)
+download-cache: ## Descargar paquetes al caché central (/downloads)
+	@echo "📦 Descargando archivos al caché local..."
+	@cd Base && ./download-cache.sh
 
 # Variables
 # Autodetección de Docker Compose (V2 "docker compose" o V1 "docker-compose")
 DOCKER_COMPOSE := $(shell \
-	if docker compose version >/dev/null 2>&1; then echo "docker compose"; \
-	elif command -v docker-compose >/dev/null 2>&1; then echo "docker-compose"; \
-	else echo "docker compose"; fi)
-COMPOSE_FILE=docker-compose.yaml
-SPARK_VERSION=3.5.0
-HADOOP_VERSION=3.3.6
+    if docker compose version >/dev/null 2>&1; then echo "docker compose"; \
+    elif command -v docker-compose >/dev/null 2>&1; then echo "docker-compose"; \
+    else echo "docker compose"; fi)
 
-help: ## Mostrar esta ayuda
-	@echo "Comandos disponibles para Módulo 2 - Spark/PySpark:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+# Construir las imágenes
+build: ## Construir la imagen Docker
+	@echo "🔨 Construyendo imágenes Docker..."
+	$(DOCKER_COMPOSE) build
 
-download-cache: ## Descargar Spark a la caché local
-	@echo "📦 Descargando Spark ${SPARK_VERSION}..."
-	@cd Spark && chmod +x download-cache.sh && ./download-cache.sh
+# Levantar el clúster
+up: ## Levantar el clúster Hadoop (1 nodo)
+	@echo "🚀 Levantando clúster Hadoop (1 nodo)..."
+	$(DOCKER_COMPOSE) up -d
+	@echo "⏳ Esperando 20 segundos a que los servicios estén listos..."
+	@for i in $$(seq 1 20); do \
+		printf "\r["; \
+		for j in $$(seq 1 20); do \
+			if [ $$j -le $$i ]; then printf "█"; else printf "░"; fi; \
+		done; \
+		printf "] $$i/20s"; \
+		sleep 1; \
+	done; \
+	echo ""
+	@echo "✅ Clúster levantado!"
+	@echo "📊 NameNode UI: http://localhost:9870"
+	@echo "📊 ResourceManager UI: http://localhost:8088"
+	@echo "⚡ Spark Master UI: http://localhost:8080"
+	@echo "📓 Jupyter Notebook: http://localhost:8888"
+	@echo "📜 Spark History Server: http://localhost:18080"
 
-build: ## Construir la imagen Docker de Spark
-	@echo "🔨 Construyendo imagen de Spark..."
-	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) build
+clean: ## Limpiar contenedores, volúmenes y red
+	@echo "🧹 Limpiando contenedores, volúmenes y red del proyecto..."
+	$(DOCKER_COMPOSE) down -v
+	@echo "✅ Limpieza completada!"
+	@echo "💡 Para eliminar también las imágenes usa: make deep-clean"
 
-up: ## Levantar el contenedor de Spark
-	@echo "🚀 Levantando Spark..."
-	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d
-	@echo "✅ Spark Master UI: http://localhost:8080"
-	@echo "✅ Spark Application UI: http://localhost:4040"
-	@echo "✅ Jupyter Notebook: http://localhost:8888"
-	@echo "✅ Spark History Server: http://localhost:18080"
 
-down: ## Detener y eliminar contenedores
-	@echo "🛑 Deteniendo Spark..."
-	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) down
-
-restart: down up ## Reiniciar Spark
-
-logs: ## Ver logs del contenedor Spark
-	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) logs -f spark-master
-
-clean: down ## Limpiar todo (contenedores, volúmenes, imágenes)
-	@echo "🧹 Limpiando contenedores, volúmenes e imágenes..."
-	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) down -v --rmi all
-	@echo "✅ Limpieza completada"
-
-shell-spark: ## Abrir shell en el contenedor Spark
-	docker exec -it spark-master bash
-
-spark-submit: ## Ejecutar spark-submit (ejemplo)
-
-test: ## Ejecuta el notebook de pruebas dentro del contenedor y verifica salida
-	@echo "🧪 Ejecutando test de notebook en spark-master..."
-	@docker exec spark-master bash -c "jupyter nbconvert --to notebook --execute /home/hadoop/notebooks/test.ipynb --output /home/hadoop/notebooks/test.executed.ipynb" >/tmp/mod2_test.out 2>/tmp/mod2_test.err || true
-	@if grep -q "Writing" /tmp/mod2_test.err; then \
-	  echo "✅ Test ejecutado correctamente: /home/hadoop/notebooks/test.executed.ipynb"; \
-	else \
-	  echo "❌ Test fallido"; \
-	  echo "--- STDOUT ---"; cat /tmp/mod2_test.out || true; \
-	  echo "--- STDERR ---"; cat /tmp/mod2_test.err || true; \
-	  exit 1; \
-	fi
-	@echo "📊 Ejemplo de spark-submit:"
-	@echo "docker exec -it spark-master spark-submit --master spark://spark-master:7077 /ruta/al/script.py"
-
-pyspark-shell: ## Abrir PySpark shell
-	docker exec -it spark-master pyspark --master spark://spark-master:7077
-
-jupyter: ## Abrir Jupyter con PySpark
-	@echo "🚀 Jupyter Notebook disponible en:"
-	@docker exec spark-master jupyter notebook list 2>/dev/null || echo "http://localhost:8888"
-
-test-hdfs: ## Probar conexión con HDFS del módulo1
-	@echo "🔗 Probando conexión con HDFS..."
-	docker exec -it spark-master hdfs dfs -ls /
-
-test-spark: ## Ejecutar un test básico de Spark
-	@echo "🧪 Ejecutando test de Spark..."
-	docker exec -it spark-master spark-submit \
-		--master spark://spark-master:7077 \
-		--deploy-mode client \
-		--py-files /opt/spark/python/lib/pyspark.zip \
-		/tmp/test-spark.py
-
-status: ## Ver estado de los servicios
-	@echo "📊 Estado de Spark:"
-	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) ps
-
-install: download-cache build up ## Instalación completa (download + build + up)
-	@echo "✅ Instalación completada"
+# Limpieza profunda: elimina ABSOLUTAMENTE TODO (contenedores, volúmenes, imágenes, red y caché)
+deep-clean: ## Limpieza profunda (elimina contenedores, volúmenes, imágenes y red)
+	@echo "🔥 LIMPIEZA PROFUNDA - Eliminando recursos del proyecto..."
+	@echo "⚠️  Esto eliminará:"
+	@echo "   - Contenedor del clúster Hadoop (master)"
+	@echo "   - Volúmenes de datos del proyecto"
+	@echo "   - Imágenes Docker del proyecto"
+	@echo "   - Red del clúster"
+	@echo "   - Caché de build del proyecto"
 	@echo ""
-	@make status
+	@read -p "¿Estás seguro? (s/N): " confirm && [ "$$confirm" = "s" ] || [ "$$confirm" = "S" ] || (echo "Operación cancelada" && exit 1)
+	@echo ""
+	@echo "🗑️  Deteniendo y eliminando contenedores y volúmenes del proyecto..."
+	@$(DOCKER_COMPOSE) down -v 2>/dev/null || true
+	@echo "🗑️  Eliminando imágenes del proyecto..."
+	@docker rmi modulo2-master 2>/dev/null || true
+	@echo "🗑️  Eliminando volúmenes del proyecto..."
+	@docker volume rm modulo2_master-data 2>/dev/null || true
+	@echo "🗑️  Eliminando red del proyecto..."
+	@docker network rm modulo2_hadoop-net 2>/dev/null || true
+	@echo "🗑️  Limpiando caché de build (solo capas no utilizadas)..."
+	@docker buildx prune -f
+
+# Ejecutar test MapReduce
+test: ## Ejecutar test MapReduce (word count)
+	@echo "🧪 Ejecutando test MapReduce..."
+	@cd ejercicios && sh test_docker.sh
+
+# Acceder al shell del master
+shell-master: ## Acceder al shell del contenedor como usuario hadoop
+	docker exec -it -u hadoop hadoop-master-simple bash

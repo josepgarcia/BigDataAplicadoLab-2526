@@ -46,10 +46,37 @@ if [ "$NODE_TYPE" = "master" ]; then
     echo "Iniciando YARN..."
     sudo -u hadoop $HADOOP_HOME/sbin/start-yarn.sh
 
+    echo "Iniciando Spark Master..."
+    sudo -u hadoop $SPARK_HOME/sbin/start-master.sh
+
+    echo "Iniciando Spark Worker..."
+    sudo -u hadoop $SPARK_HOME/sbin/start-worker.sh spark://$(hostname):7077
+
+    echo "Iniciando Spark History Server..."
+    sudo -u hadoop $SPARK_HOME/sbin/start-history-server.sh
+
+    # Configurar Jupyter
+    sudo -u hadoop mkdir -p /home/hadoop/.jupyter
+    sudo -u hadoop cat > /home/hadoop/.jupyter/jupyter_notebook_config.py <<EOF
+c.NotebookApp.ip = '0.0.0.0'
+c.NotebookApp.port = 8888
+c.NotebookApp.open_browser = False
+c.NotebookApp.token = ''
+c.NotebookApp.password = ''
+c.NotebookApp.notebook_dir = '/home/hadoop/notebooks'
+c.NotebookApp.allow_root = True
+EOF
+
+    echo "Iniciando Jupyter Notebook..."
+    sudo -u hadoop nohup jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root > /opt/spark/logs/jupyter.log 2>&1 &
+
     echo "==========================================="
-    echo "✅ Cluster Hadoop iniciado correctamente"
+    echo "✅ Cluster Hadoop + Spark iniciado correctamente"
     echo "📊 NameNode UI: http://localhost:9870"
     echo "📊 ResourceManager UI: http://localhost:8088"
+    echo "⚡ Spark Master UI: http://localhost:8080"
+    echo "📓 Jupyter Notebook: http://localhost:8888"
+    echo "📜 Spark History Server: http://localhost:18080"
     echo "==========================================="
 
 elif [ "$NODE_TYPE" = "slave" ]; then
