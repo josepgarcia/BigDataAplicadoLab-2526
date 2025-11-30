@@ -1,4 +1,4 @@
-# Módulo 2 Simple - Hadoop & Spark Single Node
+# Módulo 2 - Hadoop & Spark Single Node
 
 ## Descripción
 
@@ -54,6 +54,7 @@ make test          # Ejecutar test MapReduce (word count)
 - **NameNode UI**: http://localhost:9870
 - **ResourceManager UI**: http://localhost:8088
 - **Spark Master UI**: http://localhost:8080
+- **Spark Application UI**: http://localhost:4040, http://localhost:4041, http://localhost:4042
 - **Jupyter Notebook**: http://localhost:8888
 - **Spark History Server**: http://localhost:18080
 
@@ -205,6 +206,13 @@ Este módulo está optimizado para funcionar en máquinas con recursos limitados
 - **Reducers máximos**: 2 (por defecto 1009)
 - **Paralelismo deshabilitado**: Para reducir uso de recursos
 - **Ejecución vectorizada**: Habilitada para mejor rendimiento con menos recursos
+
+### Optimizaciones de Spark
+- **Driver Memory**: 512MB (por defecto 1GB)
+- **Executor Memory**: 512MB (por defecto 1GB)
+- **Executor Cores**: 1 (por defecto todos los disponibles)
+- **Worker Memory**: 1GB
+- **Daemon Memory**: 512MB
 
 ## Diferencias con `modulo1`
 

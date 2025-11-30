@@ -69,8 +69,7 @@ migrate_files() {
 DOWNLOAD_DIRS=(
     "$PROJECT_ROOT/modulo1/Base/downloads"
     "$PROJECT_ROOT/modulo1simple/Base/downloads"
-    "$PROJECT_ROOT/modulo2simple/Base/downloads"
-    "$PROJECT_ROOT/modulo2/Spark/downloads"
+    "$PROJECT_ROOT/modulo2/Base/downloads"
 )
 
 total_moved=0

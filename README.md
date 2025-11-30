@@ -35,17 +35,15 @@ Versión simplificada de Hadoop en un solo nodo para desarrollo y pruebas rápid
 
 **[📖 Ver documentación completa →](modulo1simple/README.md)**
 
-### [Módulo 2 - Apache Spark](modulo2/README.md)
+### [Módulo 2 - Hadoop & Spark Single Node](modulo2/README.md)
 
-> [!WARNING]
-> Este módulo aún no está funcional. Está en desarrollo.
+Entorno optimizado con Hadoop y Apache Spark en un solo nodo.
 
-Entorno Apache Spark standalone con integración a HDFS.
-
-- Apache Spark 3.5.0
+- Hadoop 3.4.1 (HDFS + YARN)
+- Apache Spark 3.5.0 (Master + Worker)
 - PySpark con Jupyter Notebook
-- Librerías de Data Science (pandas, numpy, matplotlib)
-- Conexión con HDFS del módulo1
+- Optimizado para bajo consumo de recursos
+- Conexión con HDFS
 
 **[📖 Ver documentación completa →](modulo2/README.md)**
 
@@ -60,7 +58,7 @@ cd BigDataAplicadoLab-2526
 ./migrate-downloads.sh
 
 # Elegir un módulo y seguir su README
-cd modulo1simple  # o modulo1, modulo2
+cd modulo2  # o modulo1, modulo1simple
 make download-cache  # Descarga a /downloads (compartido por todos los módulos)
 make build
 make up
@@ -194,19 +192,14 @@ BigDataAplicadoLab-2526/
 │   ├── docker-compose.yml
 │   ├── Base/
 │   └── ejercicios/       # Scripts y datos de ejemplo
-├── modulo2/              # Apache Spark
-│   ├── README.md
-│   ├── Makefile
-│   ├── docker-compose.yaml
-│   ├── Spark/
-│   ├── notebooks/
-│   └── data/
-├── modulo2simple/        # Hadoop single-node optimizado
+├── modulo2/              # Hadoop & Spark Single Node (Optimizado)
 │   ├── README.md
 │   ├── Makefile
 │   ├── docker-compose.yml
 │   ├── Base/
-│   └── ejercicios/
+│   ├── ejercicios/
+│   ├── data/
+│   └── notebooks/
 ├── migrate-downloads.sh   # Script de migración al sistema centralizado
 └── README.md             # Este archivo
 ```
