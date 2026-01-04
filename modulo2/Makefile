@@ -1,4 +1,4 @@
-.PHONY: help download-cache build up clean deep-clean shell-master
+.PHONY: help download-cache build up clean shell-master
 
 help: ## Mostrar esta ayuda
 	@echo "Comandos disponibles para Módulo 2 Simple - Hadoop & Spark Single Node:"
@@ -30,7 +30,7 @@ build: ## Construir la imagen Docker
 
 # Levantar el clúster
 up: ## Levantar el clúster Hadoop (1 nodo)
-	@echo "🚀 Levantando clúster Hadoop (1 nodo)..."
+	@echo "🚀 Levantando clúster Hadoop + Spark (1 nodo)..."
 	$(DOCKER_COMPOSE) up -d
 	@echo "⏳ Esperando 20 segundos a que los servicios estén listos..."
 	@for i in $$(seq 1 20); do \
@@ -53,31 +53,6 @@ clean: ## Limpiar contenedores, volúmenes y red
 	@echo "🧹 Limpiando contenedores, volúmenes y red del proyecto..."
 	$(DOCKER_COMPOSE) down -v
 	@echo "✅ Limpieza completada!"
-	@echo "💡 Para eliminar también las imágenes usa: make deep-clean"
-
-
-# Limpieza profunda: elimina ABSOLUTAMENTE TODO (contenedores, volúmenes, imágenes, red y caché)
-deep-clean: ## Limpieza profunda (elimina contenedores, volúmenes, imágenes y red)
-	@echo "🔥 LIMPIEZA PROFUNDA - Eliminando recursos del proyecto..."
-	@echo "⚠️  Esto eliminará:"
-	@echo "   - Contenedor del clúster Hadoop (master)"
-	@echo "   - Volúmenes de datos del proyecto"
-	@echo "   - Imágenes Docker del proyecto"
-	@echo "   - Red del clúster"
-	@echo "   - Caché de build del proyecto"
-	@echo ""
-	@read -p "¿Estás seguro? (s/N): " confirm && [ "$$confirm" = "s" ] || [ "$$confirm" = "S" ] || (echo "Operación cancelada" && exit 1)
-	@echo ""
-	@echo "🗑️  Deteniendo y eliminando contenedores y volúmenes del proyecto..."
-	@$(DOCKER_COMPOSE) down -v 2>/dev/null || true
-	@echo "🗑️  Eliminando imágenes del proyecto..."
-	@docker rmi modulo2-master 2>/dev/null || true
-	@echo "🗑️  Eliminando volúmenes del proyecto..."
-	@docker volume rm modulo2_master-data 2>/dev/null || true
-	@echo "🗑️  Eliminando red del proyecto..."
-	@docker network rm modulo2_hadoop-net 2>/dev/null || true
-	@echo "🗑️  Limpiando caché de build (solo capas no utilizadas)..."
-	@docker buildx prune -f
 
 # Ejecutar test MapReduce
 test: ## Ejecutar test MapReduce (word count)

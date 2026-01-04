@@ -24,7 +24,7 @@ services:
       - "18080:18080" # Spark History Server
       - "8888:8888" # Jupyter Notebook
     networks:
-      - hadoop-net
+      - modulo2_network
     volumes:
       - master-data:/tmp/hadoop-hadoop
       - ./ejercicios:/home/hadoop/ejercicios
@@ -41,7 +41,8 @@ services:
           cpus: '0.5'
 
 networks:
-  hadoop-net:
+  modulo2_network:
+    name: modulo2_network
     driver: bridge
 
 volumes:
