@@ -230,7 +230,7 @@ modulo2/
 ├── Base/
 │   ├── Dockerfile                  # Imagen Docker
 │   ├── download-cache.sh           # Script de descarga
-│   ├── start-hadoop.sh             # Script de inicio
+│   ├── start-cluster.sh            # Script de inicio
 │   ├── config/                     # Configuraciones Hadoop y Spark
 │   └── (downloads centralizados en /downloads en la raíz del proyecto)
 ├── ejercicios/                     # Carpeta compartida

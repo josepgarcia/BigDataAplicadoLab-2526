@@ -12,5 +12,11 @@ export PATH=$PATH:$HADOOP_HOME/sbin
 export HIVE_HOME=/opt/hive
 export PATH=$PATH:$HIVE_HOME/bin
 
+##### CONFIGURACIÓN SPARK
+export SPARK_HOME=/opt/spark
+export PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9.7-src.zip:$PYTHONPATH
+export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
+
+
 ##### No está instalado JPS, lo sustituimos
 alias jps="ps -fe | grep java | sed -E -e 's/(namenode.SecondaryNameNode)/\x1b[1;33m\1\x1b[0m/g'  -e 's/(namenode.NameNode)/\x1b[1;32m\1\x1b[0m/g'  -e 's/(ResourceManager)/\x1b[1;34m\1\x1b[0m/g'"

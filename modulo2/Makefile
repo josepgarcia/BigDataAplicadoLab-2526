@@ -30,22 +30,29 @@ build: ## Construir la imagen Docker
 
 # Levantar el clúster
 up: ## Levantar el clúster Hadoop (1 nodo)
-	@echo "🚀 Levantando clúster Hadoop + Spark (1 nodo)..."
-	$(DOCKER_COMPOSE) up -d
-	@echo "⏳ Esperando 20 segundos a que los servicios estén listos..."
-	@for i in $$(seq 1 20); do \
-		printf "\r["; \
-		for j in $$(seq 1 20); do \
-			if [ $$j -le $$i ]; then printf "█"; else printf "░"; fi; \
+	@if [ "$$(docker inspect -f '{{.State.Running}}' modulo2-master 2>/dev/null)" = "true" ]; then \
+		echo "🚀 El clúster ya estaba levantado."; \
+		$(DOCKER_COMPOSE) up -d; \
+		echo "✅ Todo listo."; \
+	else \
+		echo "🚀 Levantando clúster Hadoop + Spark (1 nodo)..."; \
+		$(DOCKER_COMPOSE) up -d; \
+		echo "⏳ Esperando 20 segundos a que los servicios estén listos..."; \
+		for i in $$(seq 1 20); do \
+			printf "\r["; \
+			for j in $$(seq 1 20); do \
+				if [ $$j -le $$i ]; then printf "█"; else printf "░"; fi; \
+			done; \
+			printf "] $$i/20s"; \
+			sleep 1; \
 		done; \
-		printf "] $$i/20s"; \
-		sleep 1; \
-	done; \
-	echo ""
-	@echo "✅ Clúster levantado!"
+		echo ""; \
+		echo "✅ Clúster levantado!"; \
+	fi
 	@echo "📊 NameNode UI: http://localhost:9870"
 	@echo "📊 ResourceManager UI: http://localhost:8088"
 	@echo "⚡ Spark Master UI: http://localhost:8080"
+	@echo "🔨 Spark Worker UI: http://localhost:8081"
 	@echo "📓 Jupyter Notebook: http://localhost:8888"
 	@echo "📜 Spark History Server: http://localhost:18080"
 
@@ -61,4 +68,4 @@ test: ## Ejecutar test MapReduce (word count)
 
 # Acceder al shell del master
 shell-master: ## Acceder al shell del contenedor como usuario hadoop
-	docker exec -it -u hadoop hadoop-master-simple bash
+	docker exec -it -u hadoop modulo2-master bash

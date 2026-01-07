@@ -166,10 +166,10 @@ RUN echo "Host *" >> /home/hadoop/.ssh/config && \
     chmod 600 /home/hadoop/.ssh/config
 
 # Copy the start script
-COPY modulo2/Base/start-hadoop.sh /start-hadoop.sh
-RUN chmod +x /start-hadoop.sh && \
-    chown hadoop:hadoop /start-hadoop.sh
-RUN dos2unix /start-hadoop.sh
+COPY modulo2/Base/start-cluster.sh /start-cluster.sh
+RUN chmod +x /start-cluster.sh && \
+    chown hadoop:hadoop /start-cluster.sh
+RUN dos2unix /start-cluster.sh
 
 # Create necessary directories
 RUN mkdir -p /var/run/sshd && \
@@ -190,4 +190,4 @@ RUN mkdir -p /var/run/sshd && \
 EXPOSE 9870 8088 9000 8042 22 10000 10002 9083 8080 7077 4040 18080 8888
 
 # Set entry point
-CMD ["/start-hadoop.sh"]
+CMD ["/start-cluster.sh"]

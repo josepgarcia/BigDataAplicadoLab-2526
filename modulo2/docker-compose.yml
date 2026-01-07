@@ -3,7 +3,7 @@ services:
     build:
       context: ..
       dockerfile: modulo2/Base/Dockerfile
-    container_name: hadoop-master-simple
+    container_name: modulo2-master
     hostname: master
     environment:
       - NODE_TYPE=master
@@ -34,11 +34,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
-          cpus: '1.5'
+          memory: 4G
+          cpus: '2.0'
         reservations:
-          memory: 1G
-          cpus: '0.5'
+          memory: 2G
+          cpus: '1.0'
 
 networks:
   modulo2_network:
