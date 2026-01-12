@@ -55,6 +55,9 @@ if [ "$NODE_TYPE" = "master" ]; then
     echo "Iniciando Spark History Server..."
     sudo -u hadoop $SPARK_HOME/sbin/start-history-server.sh
 
+    # Corregir permisos para notebooks y data (necesario en Windows con volúmenes montados)
+    sudo chown -R hadoop:hadoop /home/hadoop/notebooks /home/hadoop/data
+
     # Configurar Jupyter
     sudo -u hadoop mkdir -p /home/hadoop/.jupyter
     sudo -u hadoop cat > /home/hadoop/.jupyter/jupyter_notebook_config.py <<EOF
