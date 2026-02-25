@@ -82,3 +82,4 @@ modulo2/data/*
 # Datos extra descargados
 modulo2/notebooks/DATOS/
 modulo2/notebooks/.ipynb_checkpoints/
+modulo2/notebooks/invoices/
