@@ -1,0 +1,165 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: modulo3-prometheus
+    hostname: prometheus
+    ports:
+      - "9090:9090" # Prometheus Web UI
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - modulo3_network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: modulo3-grafana
+    hostname: grafana
+    ports:
+      - "3000:3000" # Grafana Web UI
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - modulo3_network
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: modulo3-node-exporter
+    hostname: node-exporter
+    ports:
+      - "9100:9100" # Node Exporter metrics
+    networks:
+      - modulo3_network
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: modulo3-cadvisor
+    hostname: cadvisor
+    ports:
+      - "8080:8080" # cAdvisor Web UI
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - modulo3_network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+
+  # ── Profile: carga ──────────────────────────────────────────────
+  # Nginx + exporter: se levantan con "docker compose --profile carga up -d"
+
+  nginx:
+    image: nginx:latest
+    container_name: modulo3-nginx
+    hostname: nginx
+    profiles:
+      - carga
+    ports:
+      - "8081:8081" # Nginx Web
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/index.html:/usr/share/nginx/html/index.html:ro
+    networks:
+      - modulo3_network
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: modulo3-nginx-exporter
+    hostname: nginx-exporter
+    profiles:
+      - carga
+    ports:
+      - "9113:9113" # Nginx Exporter metrics
+    command: ["--nginx.scrape-uri=http://nginx:8081/stub_status"]
+    networks:
+      - modulo3_network
+    depends_on:
+      - nginx
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.1'
+
+  # ── Profile: generar-carga ─────────────────────────────────────
+  # Generadores de carga: se levantan con "docker compose --profile carga --profile generar-carga up -d"
+
+  traffic-generator:
+    image: alpine:latest
+    container_name: modulo3-traffic-generator
+    profiles:
+      - generar-carga
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        apk add --no-cache curl >/dev/null 2>&1
+        echo "Generando trafico contra http://nginx:8081 ..."
+        while true; do
+          curl -s -o /dev/null http://nginx:8081
+          curl -s -o /dev/null http://nginx:8081/stub_status
+          curl -s -o /dev/null http://nginx:8081/noexiste
+          sleep 0.2
+        done
+    networks:
+      - modulo3_network
+    depends_on:
+      - nginx
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.1'
+
+  stress-ng:
+    image: alexeiled/stress-ng:latest
+    container_name: modulo3-stress-ng
+    profiles:
+      - generar-carga
+    command: ["--cpu", "1", "--vm", "1", "--vm-bytes", "128M", "--timeout", "0"]
+    networks:
+      - modulo3_network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+
+networks:
+  modulo3_network:
+    name: modulo3_network
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  grafana-data:

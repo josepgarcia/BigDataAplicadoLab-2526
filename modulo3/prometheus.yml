@@ -1,0 +1,25 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Métricas del propio Prometheus
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["prometheus:9090"]
+
+  # Métricas del host (CPU, memoria, disco, red)
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  # Métricas de contenedores Docker (CPU, memoria, I/O por contenedor)
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"]
+
+  # Métricas de Nginx (requests/s, conexiones activas, status codes)
+  # Solo disponible cuando se levanta el profile "carga"
+  - job_name: "nginx"
+    static_configs:
+      - targets: ["nginx-exporter:9113"]
