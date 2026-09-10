@@ -47,6 +47,25 @@ Entorno optimizado con Hadoop y Apache Spark en un solo nodo.
 
 **[📖 Ver documentación completa →](modulo2/README.md)**
 
+### Módulo 2 Kafka - Apache Kafka
+
+Entorno base con Apache Kafka en modo KRaft para prácticas de mensajería distribuida.
+
+- Apache Kafka (Confluent `cp-kafka`)
+- Configuración KRaft (broker + controller)
+- Exposición local en `localhost:9092`
+- Volumen persistente para datos del broker
+
+### Módulo 3 - DevOps & Monitoring
+
+Stack de monitorización con Prometheus y Grafana, con perfiles para carga y generación de tráfico.
+
+- Prometheus + Grafana
+- Node Exporter + cAdvisor
+- Perfil `carga`: Nginx + Nginx Exporter
+- Perfil `generar-carga`: generador de tráfico + stress-ng
+- Interfaces web en puertos 9090, 3000, 9100 y 8080
+
 ## 🚀 Inicio Rápido
 
 ```bash
@@ -58,7 +77,7 @@ cd BigDataAplicadoLab-2526
 ./migrate-downloads.sh
 
 # Elegir un módulo y seguir su README
-cd modulo2  # o modulo1, modulo1simple
+cd modulo2  # o modulo1, modulo1simple, modulo2kafka, modulo3
 make download-cache  # Descarga a /downloads (compartido por todos los módulos)
 make build
 make up
@@ -200,6 +219,15 @@ BigDataAplicadoLab-2526/
 │   ├── ejercicios/
 │   ├── data/
 │   └── notebooks/
+├── modulo2kafka/         # Apache Kafka (modo KRaft)
+│   ├── docker-compose.yaml
+│   └── Eurovision/
+├── modulo3/              # DevOps & Monitoring (Prometheus/Grafana)
+│   ├── Makefile
+│   ├── docker-compose.yml
+│   ├── menu.sh
+│   ├── nginx/
+│   └── prometheus.yml
 ├── migrate-downloads.sh   # Script de migración al sistema centralizado
 └── README.md             # Este archivo
 ```
